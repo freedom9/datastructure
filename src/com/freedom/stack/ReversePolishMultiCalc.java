@@ -55,7 +55,7 @@ public class ReversePolishMultiCalc {
      */
     public static String replaceAllBlank(String str) {
         // \\s+ 匹配任何空白字符，包括空格、制表符，换页符等，等价于[\f\n\r\t\v]
-        return str.replace("\\s+", "");
+        return str.replaceAll("\\s+", "");
     }
 
     /**
@@ -105,11 +105,12 @@ public class ReversePolishMultiCalc {
         if (str == null || "".equals(str.trim())) {
             throw new RuntimeException("data is empty");
         }
+        
+        str = replaceAllBlank(str);
         if (!LEFT.equals(String.valueOf(str.charAt(0))) && !isNumber(String.valueOf(str.charAt(0)))) {
             throw new IllegalArgumentException("data illegal, start not number");
         }
 
-        str = replaceAllBlank(str);
         String each;
         int start = 0;
 
@@ -140,7 +141,7 @@ public class ReversePolishMultiCalc {
                 }
                 start = i;
             } else if (i == str.length() - 1 || isSymbol(str.charAt(i + 1) + "")) {
-                each = start == 0 ? LEFT.equals(String.valueOf(str.charAt(0))) ? str.substring(start + 1, i + 1) : str.substring(start, i + 1) : str.substring(start + 1, i + 1);
+                each = start != 0 || LEFT.equals(String.valueOf(str.charAt(0))) ? str.substring(start, i + 1) : str.substring(start + 1, i + 1);
                 if (isNumber(each)) {
                     data.add(each);
                     continue;
@@ -218,7 +219,7 @@ public class ReversePolishMultiCalc {
     }
 
     public static void main(String[] args) {
-        String expression = "(12.8+(2-3.55))*4+10/5.0";
+        String expression = "( 12.8+(2-3.55))*4+10/5.0";
         try {
             System.out.printf("%s = %s", expression, daCalc(doMatch(expression)));
         } catch (Exception e) {
