@@ -105,6 +105,9 @@ public class ReversePolishMultiCalc {
         if (str == null || "".equals(str.trim())) {
             throw new RuntimeException("data is empty");
         }
+        if (!LEFT.equals(String.valueOf(str.charAt(0))) && !isNumber(String.valueOf(str.charAt(0)))) {
+            throw new IllegalArgumentException("data illegal, start not number");
+        }
 
         str = replaceAllBlank(str);
         String each;
@@ -137,7 +140,7 @@ public class ReversePolishMultiCalc {
                 }
                 start = i;
             } else if (i == str.length() - 1 || isSymbol(str.charAt(i + 1) + "")) {
-                 each = start == 0 ? isSymbol(str.charAt(start) + "") ? str.substring(start + 1, i + 1) : str.substring(start, i + 1) : str.substring(start + 1, i + 1);
+                each = start == 0 ? LEFT.equals(String.valueOf(str.charAt(0))) ? str.substring(start + 1, i + 1) : str.substring(start, i + 1) : str.substring(start + 1, i + 1);
                 if (isNumber(each)) {
                     data.add(each);
                     continue;
