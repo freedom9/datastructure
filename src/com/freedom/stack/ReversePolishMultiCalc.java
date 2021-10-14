@@ -48,17 +48,6 @@ public class ReversePolishMultiCalc {
     private static List<String> data = Collections.synchronizedList(new ArrayList<>());
 
     /**
-     * 去除所有空白符
-     *
-     * @param str
-     * @return
-     */
-    public static String replaceAllBlank(String str) {
-        // \\s+ 匹配任何空白字符，包括空格、制表符，换页符等，等价于[\f\n\r\t\v]
-        return str.replaceAll("\\s+", "");
-    }
-
-    /**
      * 判断是否数字 int/double/long/float
      *
      * @param str
@@ -105,25 +94,24 @@ public class ReversePolishMultiCalc {
         if (str == null || "".equals(str.trim())) {
             throw new RuntimeException("data is empty");
         }
-        
-        str = replaceAllBlank(str);
+        // \\s+ 匹配任何空白字符，包括空格、制表符，换页符等，等价于[\f\n\r\t\v]
+        str = str.replaceAll("\\s+", "");
+
         if (!LEFT.equals(String.valueOf(str.charAt(0))) && !isNumber(String.valueOf(str.charAt(0)))) {
-            throw new IllegalArgumentException("data illegal, start not number");
+            throw new IllegalArgumentException("data illegal, start not number or '('");
         }
 
-        String each;
         int start = 0;
 
         for (int i = 0; i < str.length(); i++) {
-            String iiii = str.charAt(i) + "";
-            if (isSymbol(str.charAt(i) + "")) {
-                each = str.charAt(i) + "";
+            String each = String.valueOf(str.charAt(i));
+            if (isSymbol(each)) {
                 if (stack.isEmpty() || LEFT.equals(each)
                         || (calcLevel(each) > calcLevel(stack.peek()) && calcLevel(each) < LEVEL_HIGH)) {
                     stack.push(each);
-                } else if (!stack.isEmpty() && calcLevel(each) <= calcLevel(stack.peek())) {
+                } else if (!stack.isEmpty() && calcLevel(each) < calcLevel(stack.peek())) {
                     // 栈非空，操作符优先级小于等于栈顶优先级时出栈入列，直到栈为空，或者遇到了（，最后操作符入栈
-                    while (!stack.isEmpty() && calcLevel(each) <= calcLevel(stack.peek())) {
+                    while (!stack.isEmpty() && calcLevel(each) < calcLevel(stack.peek())) {
                         if (calcLevel(stack.peek()) == LEVEL_HIGH) {
                             break;
                         }
@@ -131,7 +119,7 @@ public class ReversePolishMultiCalc {
                     }
                     stack.push(each);
                 } else if (RIGHT.equals(each)) {
-                    while (!stack.isEmpty() && LEVEL_HIGH >= calcLevel(stack.peek())) {
+                    while (!stack.isEmpty()) {
                         if (LEVEL_HIGH == calcLevel(stack.peek())) {
                             stack.pop();
                             break;
@@ -140,8 +128,16 @@ public class ReversePolishMultiCalc {
                     }
                 }
                 start = i;
-            } else if (i == str.length() - 1 || isSymbol(str.charAt(i + 1) + "")) {
-                each = start != 0 || LEFT.equals(String.valueOf(str.charAt(0))) ? str.substring(start, i + 1) : str.substring(start + 1, i + 1);
+            } else if (i == str.length() - 1 || isSymbol(String.valueOf(str.charAt(i + 1)))) {
+                if (start == 0) {
+                    while (LEFT.equals(String.valueOf(str.charAt(start)))) {
+                        start++;
+                    }
+                } else {
+                    start++;
+                }
+
+                each = str.substring(start, i + 1);
                 if (isNumber(each)) {
                     data.add(each);
                     continue;
@@ -169,7 +165,7 @@ public class ReversePolishMultiCalc {
         }
 
         if (list.size() == 1) {
-            return  Double.valueOf(list.get(0));
+            return Double.valueOf(list.get(0));
         }
 
         List<String> assistList = new ArrayList<>();
@@ -201,16 +197,16 @@ public class ReversePolishMultiCalc {
         Double result;
         switch (symbol) {
             case ADD:
-                result = Double.valueOf(s1) + Double.valueOf(s2);
+                result = Double.parseDouble(s1) + Double.parseDouble(s2);
                 break;
             case SUB:
-                result = Double.valueOf(s1) - Double.valueOf(s2);
+                result = Double.parseDouble(s1) - Double.parseDouble(s2);
                 break;
             case MUL:
-                result = Double.valueOf(s1) * Double.valueOf(s2);
+                result = Double.parseDouble(s1) * Double.parseDouble(s2);
                 break;
             case DIV:
-                result = Double.valueOf(s1) / Double.valueOf(s2);
+                result = Double.parseDouble(s1) / Double.parseDouble(s2);
                 break;
             default:
                 result = null;
@@ -219,7 +215,8 @@ public class ReversePolishMultiCalc {
     }
 
     public static void main(String[] args) {
-        String expression = "( 12.8+(2-3.55))*4+10/5.0";
+//        String expression = " (( 12.8 \t+(2+3.55))*4))+10/5.0";
+        String expression = "((12.8 + 3.55))";
         try {
             System.out.printf("%s = %s", expression, daCalc(doMatch(expression)));
         } catch (Exception e) {
