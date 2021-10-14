@@ -106,17 +106,8 @@ public class ReversePolishMultiCalc {
         for (int i = 0; i < str.length(); i++) {
             String each = String.valueOf(str.charAt(i));
             if (isSymbol(each)) {
-                if (stack.isEmpty() || LEFT.equals(each)
+                 if (stack.isEmpty() || LEFT.equals(each)
                         || (calcLevel(each) > calcLevel(stack.peek()) && calcLevel(each) < LEVEL_HIGH)) {
-                    stack.push(each);
-                } else if (!stack.isEmpty() && calcLevel(each) < calcLevel(stack.peek())) {
-                    // 栈非空，操作符优先级小于等于栈顶优先级时出栈入列，直到栈为空，或者遇到了（，最后操作符入栈
-                    while (!stack.isEmpty() && calcLevel(each) < calcLevel(stack.peek())) {
-                        if (calcLevel(stack.peek()) == LEVEL_HIGH) {
-                            break;
-                        }
-                        data.add(stack.pop());
-                    }
                     stack.push(each);
                 } else if (RIGHT.equals(each)) {
                     while (!stack.isEmpty()) {
@@ -126,6 +117,15 @@ public class ReversePolishMultiCalc {
                         }
                         data.add(stack.pop());
                     }
+                } else if (!stack.isEmpty() && calcLevel(each) <= calcLevel(stack.peek())) {
+                    // 栈非空，操作符优先级小于等于栈顶优先级时出栈入列，直到栈为空，或者遇到了（，最后操作符入栈
+                    while (!stack.isEmpty() && calcLevel(each) <= calcLevel(stack.peek())) {
+                        if (calcLevel(stack.peek()) == LEVEL_HIGH) {
+                            break;
+                        }
+                        data.add(stack.pop());
+                    }
+                    stack.push(each);
                 }
                 start = i;
             } else if (i == str.length() - 1 || isSymbol(String.valueOf(str.charAt(i + 1)))) {
@@ -215,7 +215,7 @@ public class ReversePolishMultiCalc {
     }
 
     public static void main(String[] args) {
-//        String expression = " (( 12.8 \t+(2+3.55))*4))+10/5.0";
+//        String expression = " (( 12.8 + 0 \t+(2+3.55))*4))+10/5.0";
         String expression = "((12.8 + 3.55))";
         try {
             System.out.printf("%s = %s", expression, daCalc(doMatch(expression)));
